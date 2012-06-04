@@ -1,0 +1,49 @@
+|.arch x64
+|.actionlist jit_build_actionlist
+|.globals JIT_GLOBAL_
+|.globalnames jit_globalnames
+
+/** Macros representing Native Client psuedo-ops */
+|.macro NACLRESTBP, R1, R2
+|  mov ebp, R1; add rbp, R2;
+|.endmacro
+| 
+|.macro NACLRESTSP, R1, R2
+|  mov esp, R1; add rsp, R2;
+|.endmacro
+|
+|.macro NACLSSP, R1, R2
+|  sub esp, R1; add rsp, R2;
+|.endmacro
+|
+|.macro NACLJMP, R1d, R1, R2
+|  and R1d, -32
+|  and R1, R2
+|  jmp R1
+|.endmacro
+
+static int build_code(Dst_DECL)
+{
+  | push rbp
+  | mov rbp, rsp
+  | mov dword [rbp-4], 32
+  | jmp >2
+  |3:
+  | sub dword [rbp-4], 1
+  |2:
+  | cmp dword [rbp-4], 0
+  | jg <3
+  | add dword [rbp-4], 1
+  | mov eax, dword [rbp-4]
+  | pop r11
+  | NACLRESTBP r11d, r15
+  | pop r11
+  | NACLJMP r11d, r11, r15 
+  return 0;
+}
+
+/**
+Local Variables:
+mode:c
+End:
+**/

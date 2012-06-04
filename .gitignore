@@ -10,3 +10,10 @@
 *.lai
 *.la
 *.a
+
+# Native Client EXEs
+*.nexe
+
+# Misc
+*~
+#*

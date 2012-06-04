@@ -1,0 +1,15 @@
+|.arch x86
+|.actionlist jit_build_actionlist
+|.globals JIT_GLOBAL_
+|.globalnames jit_globalnames
+
+static int build_code(Dst_DECL)
+{
+  return 0;
+}
+
+/**
+Local Variables:
+mode:c
+End:
+**/
