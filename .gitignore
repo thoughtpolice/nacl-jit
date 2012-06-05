@@ -1,4 +1,4 @@
-# Compiled Object files
+B# Compiled Object files
 *.slo
 *.lo
 *.o
@@ -16,4 +16,5 @@
 
 # Misc
 *~
-#*
+\#*
+
