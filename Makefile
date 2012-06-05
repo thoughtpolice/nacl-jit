@@ -77,4 +77,4 @@ $(PROJECT)_x86_64.nexe : $(x86_64_OBJS)
 RUN: all
 	-python -m SimpleHTTPServer
 clean:
-	rm -f *.nexe *~ *.o jit_x86.h jit_x86_64.h
+	rm -f *.nexe *~ *.o jit_x86.h jit_x86_64.h \#*
