@@ -17,7 +17,8 @@
 #
 PROJECT:=jit
 LDFLAGS:=-lppapi_cpp -lppapi -lnacl_dyncode
-CXX_SOURCES:=$(PROJECT).cc
+CXX_SOURCES:=module.cc
+C_SOURCES:=support.c jit.c
 DYNASM_SOURCES:=jit_x86.dasc jit_x86_64.dasc
 
 #
@@ -32,6 +33,7 @@ NACL_SDK_ROOT?=$(abspath $(dir $(THIS_MAKEFILE))../..)
 # Project Build flags
 WARNINGS:=-Wno-long-long -Wall -Wswitch-enum
 CXXFLAGS:=-std=gnu++98 -Idynasm -pthread -std=gnu++98 $(WARNINGS)
+CFLAGS:=-std=gnu99 -Idynasm -pthread $(WARNINGS)
 
 #
 # Compute tool paths
@@ -40,6 +42,7 @@ CXXFLAGS:=-std=gnu++98 -Idynasm -pthread -std=gnu++98 $(WARNINGS)
 OSNAME:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py)
 TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain/$(OSNAME)_x86_newlib)
 CXX:=$(TC_PATH)/bin/i686-nacl-g++
+CC:=$(TC_PATH)/bin/i686-nacl-gcc
 
 #
 # Disable DOS PATH warning when using Cygwin based tools Windows
@@ -57,19 +60,25 @@ $(DYNASM_OUT) : %.h : %.dasc $(THIS_MAKE)
 	lua dynasm/dynasm.lua -c -M $< > $@
 
 # Define 32 bit compile and link rules for main application
-x86_32_OBJS:=$(patsubst %.cc,%_32.o,$(CXX_SOURCES))
-$(x86_32_OBJS) : %_32.o : %.cc $(THIS_MAKE)
+x86_32_OBJS_CPP:=$(patsubst %.cc,%_32.o,$(CXX_SOURCES))
+x86_32_OBJS_C:=$(patsubst %.c,%_32.o,$(C_SOURCES))
+$(x86_32_OBJS_CPP) : %_32.o : %.cc $(THIS_MAKE)
 	$(CXX) -o $@ -c $< -m32 -DARCH_X86=1 -O0 -g $(CXXFLAGS)
+$(x86_32_OBJS_C) : %_32.o : %.c $(THIS_MAKE)
+	$(CC) -o $@ -c $< -m32 -DARCH_X86=1 -O0 -g $(CFLAGS)
 
-$(PROJECT)_x86_32.nexe : $(x86_32_OBJS)
+$(PROJECT)_x86_32.nexe : $(x86_32_OBJS_CPP) $(x86_32_OBJS_C)
 	$(CXX) -o $@ $^ -m32 -O0 -g $(CXXFLAGS) $(LDFLAGS)
 
 # Define 64 bit compile and link rules for C++ sources
-x86_64_OBJS:=$(patsubst %.cc,%_64.o,$(CXX_SOURCES))
-$(x86_64_OBJS) : %_64.o : %.cc $(THIS_MAKE)
+x86_64_OBJS_CPP:=$(patsubst %.cc,%_64.o,$(CXX_SOURCES))
+x86_64_OBJS_C:=$(patsubst %.c,%_64.o,$(C_SOURCES))
+$(x86_64_OBJS_CPP) : %_64.o : %.cc $(THIS_MAKE)
 	$(CXX) -o $@ -c $< -m64 -DARCH_X86_64=1 -O0 -g $(CXXFLAGS)
+$(x86_64_OBJS_C) : %_64.o : %.c $(THIS_MAKE)
+	$(CC) -o $@ -c $< -m64 -DARCH_X86_64=1 -O0 -g $(CFLAGS)
 
-$(PROJECT)_x86_64.nexe : $(x86_64_OBJS)
+$(PROJECT)_x86_64.nexe : $(x86_64_OBJS_CPP) $(x86_64_OBJS_C)
 	$(CXX) -o $@ $^ -m64 -O0 -g $(CXXFLAGS) $(LDFLAGS)
 
 # Define a phony rule so it always runs, to build nexe and start up server.

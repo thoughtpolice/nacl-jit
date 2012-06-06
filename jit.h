@@ -36,4 +36,17 @@ typedef struct {
 #error Architecture not supported
 #endif
 
+typedef int (*jit_fp)();
+
+#ifdef __cplusplus
+extern "C" {
+#endif 
+int jit_build_code(Dst_DECL);
+int jit_validate_code(Dst_DECL);
+void jit_destroy_code(Dst_DECL);
+jit_fp jit_get_fp(Dst_DECL);
+#ifdef __cplusplus
+}
+#endif
+
 #endif /*  _NACL_JIT_H */

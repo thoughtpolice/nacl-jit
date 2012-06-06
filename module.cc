@@ -23,43 +23,6 @@
 
 #include "jit.h"
 
-static int
-jit_build_code(Dst_DECL)
-{
-  int ret = 0;
-  size_t codesz = 0;
-  uint8_t* code = NULL;
-
-  /* TODO: remove when there really are globals */
-  size_t nglobs = JIT_GLOBAL__MAX < 1 ? 1 : JIT_GLOBAL__MAX;
-  void** glob   = (void**)malloc(nglobs * sizeof(void*));
-
-  dasm_init(Dst, DASM_MAXSECTION);
-  dasm_setupglobal(Dst, glob, nglobs);
-  dasm_setup(Dst, jit_build_actionlist);
-
-  (void)build_code(Dst);
-
-  /* Finalize */
-  (void)dasm_checkstep(Dst, -1); /* sanity check */
-  if((ret = dasm_link(Dst, &codesz))) return ret;
-  code = (uint8_t*) malloc(codesz);
-  if((ret = dasm_encode(Dst, (void*)code))) return ret;
-  Dst->glob   = glob;
-  Dst->frag   = code;
-  Dst->fragsz = codesz;
-
-  return ret;
-}
-
-static void
-jit_destroy_code(Dst_DECL)
-{
-  dasm_free(Dst);
-  free(Dst->glob);
-  free(Dst->frag);
-}
-
 namespace jit {
 /// The Instance class.  One of these exists for each instance of your NaCl
 /// module on the web page.  The browser will ask the Module object to create
@@ -69,6 +32,7 @@ namespace jit {
 ///     type="application/x-nacl"
 ///     nacl="hello_world.nmf"
 /// </pre>
+
 #define SAY(x) PostMessage(pp::Var(x))
 class JitInstance : public pp::Instance {
  public:
@@ -92,20 +56,22 @@ class JitInstance : public pp::Instance {
     }
     
     SAY("Validating JIT code...");
-    void* src = (void*)Dst->frag;
-    void* dst = (void*)malloc(Dst->fragsz);
-    if (0 != nacl_dyncode_create(dst, src, Dst->fragsz)) {
-      SAY("oh noes!");
-      SAY(strerror(errno));
-
+    SAY(((int32_t)Dst->frag));
+    SAY(((int32_t)Dst->fragsz));
+    if (0 != jit_validate_code(Dst)) {
+      SAY("could not validate code!");
       jit_destroy_code(Dst);
       free(Dst);
       return;
     }
 
     SAY("Executing JIT code...");
-    
+    jit_fp func = jit_get_fp(Dst);
+    //int rc = func();
+    int rc = 0;
+
     SAY("Done.");
+    SAY(rc);
     jit_destroy_code(Dst);
     free(Dst);
     return;
