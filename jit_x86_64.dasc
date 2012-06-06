@@ -4,19 +4,19 @@
 |.globalnames jit_globalnames
 
 /** Macros representing Native Client psuedo-ops */
-|.macro NACLRESTBP, R1, R2
+|.macro naclrestbp, R1, R2
 |  mov ebp, R1; add rbp, R2;
 |.endmacro
 | 
-|.macro NACLRESTSP, R1, R2
+|.macro naclrestsp, R1, R2
 |  mov esp, R1; add rsp, R2;
 |.endmacro
 |
-|.macro NACLSSP, R1, R2
+|.macro naclssp, R1, R2
 |  sub esp, R1; add rsp, R2;
 |.endmacro
 |
-|.macro NACLJMP, R1d, R1, R2
+|.macro nacljmp, R1d, R1, R2
 |  and R1d, -32
 |  and R1, R2
 |  jmp R1
@@ -36,9 +36,9 @@ static int build_code(Dst_DECL)
   | add dword [rbp-4], 1
   | mov eax, dword [rbp-4]
   | pop r11
-  | NACLRESTBP r11d, r15
+  | naclrestbp r11d, r15
   | pop r11
-  | NACLJMP r11d, r11, r15 
+  | nacljmp r11d, r11, r15 
   return 0;
 }
 
