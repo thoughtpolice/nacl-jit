@@ -25,7 +25,7 @@ jit_build_code(Dst_DECL)
   /* Finalize */
   (void)dasm_checkstep(Dst, -1); /* sanity check */
   if ((ret = dasm_link(Dst, &codesz))) return ret;
-  assert(codesz != 0);
+  assert(codesz > 0);
   code = (uint8_t*)malloc(codesz);
   if ((ret = dasm_encode(Dst, (void*)code))) return ret;
 
