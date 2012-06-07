@@ -24,10 +24,10 @@ typedef struct {
 #include "dasm_proto.h"
 #if defined(ARCH_X86_64)
 #include "dasm_x86.h"
-#include "jit_x86.h"
+#include "jit_x86_64.h"
 #elif defined(ARCH_X86)
 #include "dasm_x86.h"
-#include "jit_x86_64.h"
+#include "jit_x86.h"
 #elif defined(ARCH_ARM)
 #error Architecture not supported
 #include "dasm_arm.h"
