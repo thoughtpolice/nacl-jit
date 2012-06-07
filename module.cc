@@ -56,8 +56,6 @@ class JitInstance : public pp::Instance {
     }
     
     SAY("Validating JIT code...");
-    SAY(((int32_t)Dst->frag));
-    SAY(((int32_t)Dst->fragsz));
     if (0 != jit_validate_code(Dst)) {
       SAY("could not validate code!");
       jit_destroy_code(Dst);
@@ -67,8 +65,7 @@ class JitInstance : public pp::Instance {
 
     SAY("Executing JIT code...");
     jit_fp func = jit_get_fp(Dst);
-    //int rc = func();
-    int rc = 0;
+    int rc = func();
 
     SAY("Done.");
     SAY(rc);
