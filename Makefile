@@ -20,6 +20,7 @@ LDFLAGS:=-lppapi_cpp -lppapi -lnacl_dyncode
 CXX_SOURCES:=module.cc
 C_SOURCES:=support.c jit.c
 DYNASM_SOURCES:=jit_x86.dasc jit_x86_64.dasc
+MINILUA:=minilua
 
 #
 # Get pepper directory for toolchain and includes.
@@ -53,11 +54,15 @@ export CYGWIN
 
 # Declare the ALL target first, to make the 'all' target the default build
 DYNASM_OUT=$(patsubst %.dasc, %.h, $(DYNASM_SOURCES))
-all: $(DYNASM_OUT) $(PROJECT)_x86_32.nexe $(PROJECT)_x86_64.nexe
+all: $(MINILUA) $(DYNASM_OUT) $(PROJECT)_x86_32.nexe $(PROJECT)_x86_64.nexe
+
+# MiniLua is used to run DynASM
+$(MINILUA) : minilua.c
+	gcc -O2 $< -o $@ -lm
 
 # DynASM rules
-$(DYNASM_OUT) : %.h : %.dasc $(THIS_MAKE)
-	lua dynasm/dynasm.lua -c -M $< > $@
+$(DYNASM_OUT) : %.h : %.dasc $(THIS_MAKE) $(MINILUA)
+	./$(MINILUA) dynasm/dynasm.lua -c -M $< > $@
 
 # Define 32 bit compile and link rules for main application
 x86_32_OBJS_CPP:=$(patsubst %.cc,%_32.o,$(CXX_SOURCES))
@@ -86,4 +91,4 @@ $(PROJECT)_x86_64.nexe : $(x86_64_OBJS_CPP) $(x86_64_OBJS_C)
 RUN: all
 	-python -m SimpleHTTPServer
 clean:
-	rm -f *.nexe *~ *.o jit_x86.h jit_x86_64.h \#*
+	rm -f *.nexe *~ *.o jit_x86.h jit_x86_64.h \#* $(MINILUA)
